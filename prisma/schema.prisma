@@ -1,0 +1,90 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model user {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+}
+
+model actors {
+  id         Int      @id @default(autoincrement())
+  firstname  String
+  lastname   String
+  birth_date DateTime
+
+  movies actorsToMovies[]
+}
+
+model directors {
+  id         Int      @id @default(autoincrement())
+  firstname  String
+  lastname   String
+  birth_date DateTime
+
+  movies movies[]
+}
+
+model genres {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  movies genresToMovies[]
+}
+
+model movies {
+  id           Int      @id @default(autoincrement())
+  title        String   @unique
+  release_date DateTime
+  description  String   @db.LongText
+  createdAt    DateTime @default(now())
+
+  actors actorsToMovies[]
+
+  genres genresToMovies[]
+
+  director    directors @relation(fields: [director_id], references: [id])
+  director_id Int
+
+  reviews reviews[]
+
+  @@index([title])
+}
+
+model reviews {
+  id          Int      @id @default(autoincrement())
+  firstname   String
+  lastname    String
+  title       String
+  description String   @db.LongText
+  createDate  DateTime @default(now())
+
+  movie    movies @relation(fields: [movie_id], references: [id])
+  movie_id Int
+}
+
+model actorsToMovies {
+  actor    actors @relation(fields: [actor_id], references: [id])
+  actor_id Int
+
+  movie    movies @relation(fields: [movie_id], references: [id])
+  movie_id Int
+
+  @@id([actor_id, movie_id])
+}
+
+model genresToMovies {
+  genre    genres @relation(fields: [genre_id], references: [id])
+  genre_id Int
+
+  movie    movies @relation(fields: [movie_id], references: [id])
+  movie_id Int
+
+  @@id([genre_id, movie_id])
+}
